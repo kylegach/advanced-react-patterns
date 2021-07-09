@@ -34,18 +34,24 @@ function useControlledSwitchWarning({
   controlledPropName,
   isControlled,
 }) {
-  const {current: wasControlled} = React.useRef(isControlled)
+  if (process.env.NODE_ENV !== 'production') {
+    // [1] `process.env.NODE_ENV` will never change in a running app, so this hook call is _not_ actually conditional
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const {current: wasControlled} = React.useRef(isControlled)
 
-  React.useEffect(() => {
-    warning(
-      !(isControlled && !wasControlled),
-      `\`${componentName}\` is changing from uncontrolled to controlled. Components should not switch from uncontrolled to controlled (or vice versa). Decide between using a controlled or uncontrolled \`${componentName}\` for the lifetime of the component. Check the \`${controlledPropName}\` prop.`,
-    )
-    warning(
-      !(!isControlled && wasControlled),
-      `\`${componentName}\` is changing from controlled to uncontrolled. Components should not switch from uncontrolled to controlled (or vice versa). Decide between using a controlled or uncontrolled \`${componentName}\` for the lifetime of the component. Check the \`${controlledPropName}\` prop.`,
-    )
-  }, [componentName, controlledPropName, isControlled, wasControlled])
+    // [1]
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    React.useEffect(() => {
+      warning(
+        !(isControlled && !wasControlled),
+        `\`${componentName}\` is changing from uncontrolled to controlled. Components should not switch from uncontrolled to controlled (or vice versa). Decide between using a controlled or uncontrolled \`${componentName}\` for the lifetime of the component. Check the \`${controlledPropName}\` prop.`,
+      )
+      warning(
+        !(!isControlled && wasControlled),
+        `\`${componentName}\` is changing from controlled to uncontrolled. Components should not switch from uncontrolled to controlled (or vice versa). Decide between using a controlled or uncontrolled \`${componentName}\` for the lifetime of the component. Check the \`${controlledPropName}\` prop.`,
+      )
+    }, [componentName, controlledPropName, isControlled, wasControlled])
+  }
 }
 
 function useOnChangeReadOnlyWarning({
@@ -58,21 +64,25 @@ function useOnChangeReadOnlyWarning({
   readOnlyPropName = 'readOnly',
   uncontrolledPropName,
 }) {
-  React.useEffect(() => {
-    warning(
-      !(isControlled && !onChange && !readOnly),
-      `Failed prop type: You provided a \`${controlledPropName}\` prop to ${componentName} without an \`${onChangePropName}\` handler. This will render a read-only component. If the component should be mutable use \`${uncontrolledPropName}\`. Otherwise, set \`${onChangePropName}\` or \`${readOnlyPropName}\`.`,
-    )
-  }, [
-    componentName,
-    controlledPropName,
-    isControlled,
-    onChange,
-    onChangePropName,
-    readOnly,
-    readOnlyPropName,
-    uncontrolledPropName,
-  ])
+  if (process.env.NODE_ENV !== 'production') {
+    // [1]
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    React.useEffect(() => {
+      warning(
+        !(isControlled && !onChange && !readOnly),
+        `Failed prop type: You provided a \`${controlledPropName}\` prop to ${componentName} without an \`${onChangePropName}\` handler. This will render a read-only component. If the component should be mutable use \`${uncontrolledPropName}\`. Otherwise, set \`${onChangePropName}\` or \`${readOnlyPropName}\`.`,
+      )
+    }, [
+      componentName,
+      controlledPropName,
+      isControlled,
+      onChange,
+      onChangePropName,
+      readOnly,
+      readOnlyPropName,
+      uncontrolledPropName,
+    ])
+  }
 }
 
 function useToggle({
