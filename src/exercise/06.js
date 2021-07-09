@@ -40,6 +40,7 @@ function useToggle({
   const [state, dispatch] = React.useReducer(reducer, initialState)
 
   const onIsControlled = controlledOn != null
+  const {current: onWasControlled} = React.useRef(onIsControlled)
 
   React.useEffect(() => {
     warning(
@@ -47,6 +48,17 @@ function useToggle({
       'Failed prop type: You provided a `on` prop to useToggle without an `onChange` handler. This will render a read-only Toggle. If the Toggle should be mutable use `initialOn`. Otherwise, set `onChange` or `readOnly`.',
     )
   }, [onChange, onIsControlled, readOnly])
+
+  React.useEffect(() => {
+    warning(
+      !(onIsControlled && !onWasControlled),
+      '`useToggle is changing from uncontrolled to controlled. Components should not switch from uncontrolled to controlled (or vice versa). Decide between using a controlled or uncontrolled `useToggle` for the lifetime of the component. Check the `on` prop.',
+    )
+    warning(
+      !(!onIsControlled && onWasControlled),
+      '`useToggle is changing from controlled to uncontrolled. Components should not switch from uncontrolled to controlled (or vice versa). Decide between using a controlled or uncontrolled `useToggle` for the lifetime of the component. Check the `on` prop.',
+    )
+  }, [onIsControlled, onWasControlled])
 
   const on = onIsControlled ? controlledOn : state.on
 
@@ -104,7 +116,7 @@ function App() {
     if (action.type === actionTypes.toggle && timesClicked > 4) {
       return
     }
-    setBothOn(state.on)
+    setBothOn()
     setTimesClicked(c => c + 1)
   }
 
@@ -117,7 +129,7 @@ function App() {
     <div>
       <div>
         <Toggle on={bothOn} onChange={handleToggleChange} />
-        <Toggle on={bothOn} readOnly />
+        <Toggle on={bothOn} onChange={handleToggleChange} />
       </div>
       {timesClicked > 4 ? (
         <div data-testid="notice">
