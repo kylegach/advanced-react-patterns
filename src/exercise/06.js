@@ -2,6 +2,7 @@
 // http://localhost:3000/isolated/exercise/06.js
 
 import * as React from 'react'
+import warning from 'warning'
 import {Switch} from '../switch'
 
 const callAll =
@@ -33,11 +34,20 @@ function useToggle({
   reducer = toggleReducer,
   onChange,
   on: controlledOn,
+  readOnly,
 } = {}) {
   const {current: initialState} = React.useRef({on: initialOn})
   const [state, dispatch] = React.useReducer(reducer, initialState)
 
   const onIsControlled = controlledOn != null
+
+  React.useEffect(() => {
+    warning(
+      !(onIsControlled && !onChange && !readOnly),
+      'Failed prop type: You provided a `on` prop to useToggle without an `onChange` handler. This will render a read-only Toggle. If the Toggle should be mutable use `initialOn`. Otherwise, set `onChange` or `readOnly`.',
+    )
+  }, [onChange, onIsControlled, readOnly])
+
   const on = onIsControlled ? controlledOn : state.on
 
   function dispatchWithOnChange(action) {
@@ -76,8 +86,12 @@ function useToggle({
   }
 }
 
-function Toggle({on: controlledOn, onChange}) {
-  const {on, getTogglerProps} = useToggle({on: controlledOn, onChange})
+function Toggle({on: controlledOn, onChange, readOnly}) {
+  const {on, getTogglerProps} = useToggle({
+    on: controlledOn,
+    onChange,
+    readOnly,
+  })
   const props = getTogglerProps({on})
   return <Switch {...props} />
 }
@@ -103,7 +117,7 @@ function App() {
     <div>
       <div>
         <Toggle on={bothOn} onChange={handleToggleChange} />
-        <Toggle on={bothOn} onChange={handleToggleChange} />
+        <Toggle on={bothOn} readOnly />
       </div>
       {timesClicked > 4 ? (
         <div data-testid="notice">
